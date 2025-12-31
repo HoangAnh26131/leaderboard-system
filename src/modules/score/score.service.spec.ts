@@ -8,6 +8,7 @@ import { getQueueToken } from '@nestjs/bull';
 import { CACHE_CLIENT } from '../cache/cache.constant';
 import { BadRequestException, ForbiddenException } from '@nestjs/common';
 import { SCORE_QUEUE } from './score.constant';
+import { TooManyRequestsException } from '../../common/exceptions/too-many-request.exception';
 
 describe('ScoreService', () => {
   let service: ScoreService;
@@ -79,7 +80,7 @@ describe('ScoreService', () => {
     const validPayload = {
       playerId: 'player_123',
       score: 15000,
-      metadata: { level: 5, timeSpent: 120 },
+      metadata: {},
       timestamp: new Date('2024-01-15T10:30:00Z'),
     };
 
@@ -147,11 +148,11 @@ describe('ScoreService', () => {
       await expect(service.submit('player_123', { ...payload })).resolves.toBeDefined();
     });
 
-    it('should throw BadRequestException when rate limit exceeded', async () => {
+    it('should throw TooManyRequestsException when rate limit exceeded', async () => {
       mockRedis.zcard.mockResolvedValue(10);
 
       await expect(service.submit('player_123', { ...payload })).rejects.toThrow(
-        BadRequestException,
+        TooManyRequestsException,
       );
       await expect(service.submit('player_123', { ...payload })).rejects.toThrow(
         'Rate limit exceeded',

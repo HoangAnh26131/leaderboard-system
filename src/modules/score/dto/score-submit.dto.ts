@@ -15,7 +15,7 @@ export class ScoreSubmitDto {
 
   @IsObject()
   @IsNotEmpty()
-  metadata: Record<string, number | string>;
+  metadata: { level?: number; timespent?: number; [x: string]: string | number | undefined };
 
   @IsDate()
   @IsNotEmpty()

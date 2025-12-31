@@ -77,7 +77,7 @@ describe('Score Submission Flow (e2e)', () => {
       .send({
         playerId,
         score: 15000,
-        metadata: { level: 5, timeSpent: 120 },
+        metadata: {},
         timestamp: new Date().toISOString(),
       })
       .expect(201);

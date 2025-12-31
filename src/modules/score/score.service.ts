@@ -40,7 +40,6 @@ export class ScoreService {
   ) {}
 
   async submit(playerRequestId: string, payload: TScoreSubmitPayload) {
-    payload.timestamp = new Date();
     const { playerId, score, timestamp } = payload;
 
     if (playerRequestId !== playerId) throw new ForbiddenException('Player is not allowed');
@@ -76,8 +75,9 @@ export class ScoreService {
 
   private async detectImpossibleJumps(score: TScoreSubmitPayload) {
     const { level, timespent } = score.metadata;
+    if (!level && !timespent) return false;
 
-    if (timespent < SCORE_TIMESPENT_MIN || level < 0) return true;
+    if ((timespent && timespent < SCORE_TIMESPENT_MIN) || (level && level < 0)) return true;
 
     const lastScore = await this.scoreRepository.findOne({
       where: { playerId: score.playerId },
@@ -89,7 +89,8 @@ export class ScoreService {
     const lastLevel = lastScore.metadata?.level;
     if (typeof lastLevel !== 'number') return true;
 
-    if (level - lastLevel > SCORE_IMPOSSIBLE_JUMP_LEVEL || level - lastLevel <= 0) return true;
+    if (level && (level - lastLevel > SCORE_IMPOSSIBLE_JUMP_LEVEL || level - lastLevel <= 0))
+      return true;
 
     return false;
   }

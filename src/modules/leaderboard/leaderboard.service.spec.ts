@@ -113,9 +113,7 @@ describe('LeaderboardService', () => {
     });
 
     it('should validate and cap limit to max value', async () => {
-      mockScoreRepository.query
-        .mockResolvedValueOnce([])
-        .mockResolvedValueOnce([{ total: 0 }]);
+      mockScoreRepository.query.mockResolvedValueOnce([]).mockResolvedValueOnce([{ total: 0 }]);
 
       const result = await service.getLeaderboard({
         timeframe: ETimeframe.ALLTIME,
@@ -128,9 +126,7 @@ describe('LeaderboardService', () => {
     });
 
     it('should filter by timeframe correctly', async () => {
-      mockScoreRepository.query
-        .mockResolvedValueOnce([])
-        .mockResolvedValueOnce([{ total: 0 }]);
+      mockScoreRepository.query.mockResolvedValueOnce([]).mockResolvedValueOnce([{ total: 0 }]);
 
       await service.getLeaderboard({
         timeframe: ETimeframe.DAILY,
@@ -259,9 +255,7 @@ describe('LeaderboardService', () => {
 
   describe('getTimeRange', () => {
     it('should return correct range for DAILY timeframe', async () => {
-      mockScoreRepository.query
-        .mockResolvedValueOnce([])
-        .mockResolvedValueOnce([{ total: 0 }]);
+      mockScoreRepository.query.mockResolvedValueOnce([]).mockResolvedValueOnce([{ total: 0 }]);
 
       await service.getLeaderboard({
         timeframe: ETimeframe.DAILY,
@@ -275,9 +269,7 @@ describe('LeaderboardService', () => {
     });
 
     it('should return correct range for WEEKLY timeframe', async () => {
-      mockScoreRepository.query
-        .mockResolvedValueOnce([])
-        .mockResolvedValueOnce([{ total: 0 }]);
+      mockScoreRepository.query.mockResolvedValueOnce([]).mockResolvedValueOnce([{ total: 0 }]);
 
       await service.getLeaderboard({
         timeframe: ETimeframe.WEEKLY,
@@ -290,9 +282,7 @@ describe('LeaderboardService', () => {
     });
 
     it('should return correct range for MONTHLY timeframe', async () => {
-      mockScoreRepository.query
-        .mockResolvedValueOnce([])
-        .mockResolvedValueOnce([{ total: 0 }]);
+      mockScoreRepository.query.mockResolvedValueOnce([]).mockResolvedValueOnce([{ total: 0 }]);
 
       await service.getLeaderboard({
         timeframe: ETimeframe.MONTHLY,
@@ -305,9 +295,7 @@ describe('LeaderboardService', () => {
     });
 
     it('should return undefined start for ALLTIME timeframe', async () => {
-      mockScoreRepository.query
-        .mockResolvedValueOnce([])
-        .mockResolvedValueOnce([{ total: 0 }]);
+      mockScoreRepository.query.mockResolvedValueOnce([]).mockResolvedValueOnce([{ total: 0 }]);
 
       await service.getLeaderboard({
         timeframe: ETimeframe.ALLTIME,

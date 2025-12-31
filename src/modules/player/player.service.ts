@@ -52,18 +52,10 @@ export class PlayerService {
 
     await this.repo.update(player.id, player);
 
-    this.cacheService
-      .set(`${PLAYER_BY_WALLET_KEY}${player.wallet}`, player, {
-        ttl: PLAYER_BY_WALLET_TTL,
-      })
-      .catch(() => {
-        this.logger.error('Failed to set:', `${PLAYER_BY_WALLET_KEY}${player.wallet}`);
-      });
-    this.cacheService
-      .set(`${PLAYER_BY_ID_KEY}${playerId}`, player, { ttl: PLAYER_BY_ID_TTL })
-      .catch(() => {
-        this.logger.error('Failed to set:', `${PLAYER_BY_ID_KEY}${playerId}`);
-      });
+    this.cacheService.set(`${PLAYER_BY_WALLET_KEY}${player.wallet}`, player, {
+      ttl: PLAYER_BY_WALLET_TTL,
+    });
+    this.cacheService.set(`${PLAYER_BY_ID_KEY}${playerId}`, player, { ttl: PLAYER_BY_ID_TTL });
 
     return player.totalScore;
   }

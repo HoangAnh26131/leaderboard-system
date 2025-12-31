@@ -1,7 +1,7 @@
 export type TScoreSubmitPayload = {
   playerId: string;
   score: number;
-  metadata: Record<string, string | number>;
+  metadata: { level: number; timespent: number; [x: string]: string | number };
   timestamp: Date;
 };
 

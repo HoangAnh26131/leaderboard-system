@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import * as request from 'supertest';
 import * as cookieParser from 'cookie-parser';
-import { Wallet } from 'ethers';
+import { HDNodeWallet, Wallet } from 'ethers';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule } from '@nestjs/config';
 import Redis from 'ioredis';
@@ -25,14 +25,12 @@ import { HttpExceptionFilter } from '../src/common/filters/http-exception.filter
 describe('Score Submission Flow (e2e)', () => {
   let app: INestApplication;
   let agent: ReturnType<typeof request.agent>;
-  let wallet: Wallet;
+  let wallet: HDNodeWallet;
   let playerId: string;
 
   let mysqlContainer: StartedMySqlContainer;
   let redisContainer: StartedTestContainer;
   let redis: Redis;
-
-  const TEST_PRIVATE_KEY = '0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d';
 
   beforeAll(async () => {
     // Start MySQL container
@@ -44,9 +42,7 @@ describe('Score Submission Flow (e2e)', () => {
       .start();
 
     // Start Redis container
-    redisContainer = await new GenericContainer('redis:7-alpine')
-      .withExposedPorts(6379)
-      .start();
+    redisContainer = await new GenericContainer('redis:7-alpine').withExposedPorts(6379).start();
 
     // Create Redis client
     redis = new Redis({
@@ -54,7 +50,7 @@ describe('Score Submission Flow (e2e)', () => {
       port: redisContainer.getMappedPort(6379),
     });
 
-    wallet = new Wallet(TEST_PRIVATE_KEY);
+    wallet = Wallet.createRandom();
 
     const moduleRef: TestingModule = await Test.createTestingModule({
       imports: [
@@ -197,7 +193,7 @@ describe('Score Submission Flow (e2e)', () => {
       .send({
         playerId,
         score: 15000,
-        metadata: {},
+        metadata: { level: 1, timespent: 100 },
         timestamp: new Date().toISOString(),
       })
       .expect(201);
@@ -212,7 +208,7 @@ describe('Score Submission Flow (e2e)', () => {
       .send({
         playerId,
         score: -10,
-        metadata: {},
+        metadata: { level: 1, timespent: 100 },
         timestamp: new Date().toISOString(),
       })
       .expect(400);
@@ -224,7 +220,7 @@ describe('Score Submission Flow (e2e)', () => {
       .send({
         playerId,
         score: 2_000_000,
-        metadata: {},
+        metadata: { level: 1, timespent: 100 },
         timestamp: new Date().toISOString(),
       })
       .expect(400);

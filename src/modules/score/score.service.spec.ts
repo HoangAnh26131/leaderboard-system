@@ -80,7 +80,7 @@ describe('ScoreService', () => {
     const validPayload = {
       playerId: 'player_123',
       score: 15000,
-      metadata: {},
+      metadata: { level: 1, timespent: 100 },
       timestamp: new Date('2024-01-15T10:30:00Z'),
     };
 
@@ -138,7 +138,7 @@ describe('ScoreService', () => {
     const payload = {
       playerId: 'player_123',
       score: 1000,
-      metadata: {},
+      metadata: { level: 1, timespent: 100 },
       timestamp: new Date(),
     };
 

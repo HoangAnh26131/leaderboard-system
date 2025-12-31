@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import * as request from 'supertest';
-import { Wallet } from 'ethers';
+import { Wallet, HDNodeWallet } from 'ethers';
 import * as cookieParser from 'cookie-parser';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule } from '@nestjs/config';
@@ -22,13 +22,11 @@ import { HttpExceptionFilter } from '../src/common/filters/http-exception.filter
 describe('Auth Wallet (e2e)', () => {
   let app: INestApplication;
   let agent: ReturnType<typeof request.agent>;
-  let wallet: Wallet;
+  let wallet: HDNodeWallet;
 
   let mysqlContainer: StartedMySqlContainer;
   let redisContainer: StartedTestContainer;
   let redis: Redis;
-
-  const TEST_PRIVATE_KEY = '0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d';
 
   beforeAll(async () => {
     // Start MySQL container
@@ -40,9 +38,7 @@ describe('Auth Wallet (e2e)', () => {
       .start();
 
     // Start Redis container
-    redisContainer = await new GenericContainer('redis:7-alpine')
-      .withExposedPorts(6379)
-      .start();
+    redisContainer = await new GenericContainer('redis:7-alpine').withExposedPorts(6379).start();
 
     // Create Redis client
     redis = new Redis({
@@ -50,7 +46,7 @@ describe('Auth Wallet (e2e)', () => {
       port: redisContainer.getMappedPort(6379),
     });
 
-    wallet = new Wallet(TEST_PRIVATE_KEY);
+    wallet = Wallet.createRandom();
 
     const moduleRef: TestingModule = await Test.createTestingModule({
       imports: [
@@ -181,10 +177,7 @@ describe('Auth Wallet (e2e)', () => {
     const message = nonceRes.body.data.message;
     const signature = await wallet.signMessage(message);
 
-    await agent
-      .post('/auth/wallet/verify')
-      .send({ wallet: wallet.address, signature })
-      .expect(201);
+    await agent.post('/auth/wallet/verify').send({ wallet: wallet.address, signature }).expect(201);
 
     // Now refresh
     const res = await agent.post('/auth/wallet/refresh').expect(201);
@@ -201,10 +194,7 @@ describe('Auth Wallet (e2e)', () => {
 
   it('POST /auth/wallet/verify → reject invalid signature', async () => {
     // First request nonce
-    await agent
-      .post('/auth/wallet/request')
-      .send({ wallet: wallet.address })
-      .expect(201);
+    await agent.post('/auth/wallet/request').send({ wallet: wallet.address }).expect(201);
 
     // Then try with invalid signature
     await agent

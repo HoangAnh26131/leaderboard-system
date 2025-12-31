@@ -89,7 +89,7 @@ export class ScoreService {
     const lastLevel = lastScore.metadata?.level;
     if (typeof lastLevel !== 'number') return true;
 
-    if (level && (level - lastLevel > SCORE_IMPOSSIBLE_JUMP_LEVEL || level - lastLevel <= 0))
+    if (level && (level - lastLevel > SCORE_IMPOSSIBLE_JUMP_LEVEL || level - lastLevel < 0))
       return true;
 
     return false;

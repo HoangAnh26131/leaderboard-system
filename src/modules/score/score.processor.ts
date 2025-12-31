@@ -25,7 +25,6 @@ export class ScoreProcessor {
       await this.scoreRepository.save(job.data);
       await this.playerService.updateTotalScore(job.data.playerId, job.data.totalScore);
     } catch (err) {
-      this.logger.error('Failed to save score to DB:', err);
       throw err;
     }
   }

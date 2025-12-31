@@ -2,18 +2,16 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import * as request from 'supertest';
 import * as cookieParser from 'cookie-parser';
-import { Wallet } from 'ethers';
+import { Wallet, HDNodeWallet } from 'ethers';
 import { AppModule } from '../src/app.module';
 
 describe('Score Submission Flow (e2e)', () => {
   let app: INestApplication;
   let agent: ReturnType<typeof request.agent>;
-  let wallet: Wallet;
-
-  const TEST_PRIVATE_KEY = '0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d';
+  let wallet: HDNodeWallet;
 
   beforeAll(async () => {
-    wallet = new Wallet(TEST_PRIVATE_KEY);
+    wallet = Wallet.createRandom();
 
     const moduleRef: TestingModule = await Test.createTestingModule({
       imports: [AppModule],

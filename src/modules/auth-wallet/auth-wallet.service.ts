@@ -32,7 +32,12 @@ export class AuthWalletService {
       throw new UnauthorizedException('Nonce expired');
     }
 
-    const recovered = ethers.verifyMessage(this.nonceMessage(nonce), signature);
+    let recovered: string;
+    try {
+      recovered = ethers.verifyMessage(this.nonceMessage(nonce), signature);
+    } catch {
+      throw new UnauthorizedException('Invalid signature format');
+    }
 
     if (recovered.toLowerCase() !== wallet.toLowerCase()) {
       throw new UnauthorizedException('Invalid signature');

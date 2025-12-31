@@ -176,4 +176,125 @@ describe('ScoreService', () => {
       expect(mockRedis.expire).toHaveBeenCalledWith(expect.any(String), 61);
     });
   });
+
+  describe('detectImpossibleJumps', () => {
+    const basePayload = {
+      playerId: 'player_123',
+      score: 1000,
+      timestamp: new Date(),
+    };
+
+    beforeEach(() => {
+      mockRedis.zcard.mockResolvedValue(0);
+      mockPlayerService.getById.mockResolvedValue({ id: 'player_123' });
+    });
+
+    it('should reject score with timespent below minimum', async () => {
+      const payloadWithLowTimespent = {
+        ...basePayload,
+        metadata: { timespent: 0.5, level: 1 },
+      };
+
+      await expect(service.submit('player_123', payloadWithLowTimespent)).rejects.toThrow(
+        BadRequestException,
+      );
+    });
+
+    it('should reject score with negative level', async () => {
+      const payloadWithNegativeLevel = {
+        ...basePayload,
+        metadata: { level: -1, timespent: 10 },
+      };
+
+      await expect(service.submit('player_123', payloadWithNegativeLevel)).rejects.toThrow(
+        BadRequestException,
+      );
+    });
+
+    it('should reject first score that is not level 1', async () => {
+      // No previous score exists
+      mockScoreRepository.findOne.mockResolvedValue(null);
+
+      const payloadWithLevel5 = {
+        ...basePayload,
+        metadata: { level: 5, timespent: 10 },
+      };
+
+      await expect(service.submit('player_123', payloadWithLevel5)).rejects.toThrow(
+        BadRequestException,
+      );
+    });
+
+    it('should allow first score at level 1', async () => {
+      // First call: detectImpossibleJumps - no previous score
+      // Second call: timestamp check - no duplicate
+      mockScoreRepository.findOne
+        .mockResolvedValueOnce(null)  // for detectImpossibleJumps
+        .mockResolvedValueOnce(null); // for timestamp check
+
+      const payloadWithLevel1 = {
+        ...basePayload,
+        metadata: { level: 1, timespent: 10 },
+      };
+
+      await expect(service.submit('player_123', payloadWithLevel1)).resolves.toBeDefined();
+    });
+
+    it('should reject when last score has no level metadata', async () => {
+      // Previous score exists but has no level
+      mockScoreRepository.findOne.mockResolvedValue({ metadata: {} });
+
+      const payloadWithLevel2 = {
+        ...basePayload,
+        metadata: { level: 2, timespent: 10 },
+      };
+
+      await expect(service.submit('player_123', payloadWithLevel2)).rejects.toThrow(
+        BadRequestException,
+      );
+    });
+
+    it('should reject when level jump is too large', async () => {
+      // Previous score at level 1
+      mockScoreRepository.findOne.mockResolvedValue({ metadata: { level: 1 } });
+
+      const payloadWithLevel10 = {
+        ...basePayload,
+        metadata: { level: 10, timespent: 10 },
+      };
+
+      await expect(service.submit('player_123', payloadWithLevel10)).rejects.toThrow(
+        BadRequestException,
+      );
+    });
+
+    it('should reject when level is same or decreasing', async () => {
+      // Previous score at level 3
+      mockScoreRepository.findOne.mockResolvedValue({ metadata: { level: 3 } });
+
+      const payloadWithLevel2 = {
+        ...basePayload,
+        metadata: { level: 2, timespent: 10 },
+      };
+
+      await expect(service.submit('player_123', payloadWithLevel2)).rejects.toThrow(
+        BadRequestException,
+      );
+    });
+
+    it('should allow valid level progression', async () => {
+      // First call: detectImpossibleJumps gets last score with level 1
+      // Second call: timestamp check returns null (no duplicate)
+      mockScoreRepository.findOne
+        .mockResolvedValueOnce({ metadata: { level: 1 } }) // for detectImpossibleJumps
+        .mockResolvedValueOnce(null); // for timestamp check
+
+      const payloadWithLevel2 = {
+        ...basePayload,
+        metadata: { level: 2, timespent: 10 },
+      };
+
+      await expect(service.submit('player_123', payloadWithLevel2)).resolves.toBeDefined();
+    });
+  });
 });

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { Inject } from '@nestjs/common';
 import { Redis } from 'ioredis';
 import { CACHE_CLIENT } from '../cache/cache.constant';
@@ -6,7 +6,7 @@ import { ETimeframe, TLeaderboardRecords, TLeaderboardRetrievalPayload } from '.
 import {
   BATCH_LEADERBOARD_INSERT_SIZE,
   LEADERBOARD_ALLTIME_KEY,
-  LEADERBOARD_KEY_PREFIX,
+  LEADERBOARD_CACHE_TTL,
   LEADERBOARD_PLAYER_KEY,
   LEADERBOARD_PLAYER_LIMIT,
   LEADERBOARD_PLAYER_RANK_SURROUND,
@@ -17,9 +17,12 @@ import { ScoreEntity } from '../score/score.entity';
 import { MoreThan, MoreThanOrEqual, Repository } from 'typeorm';
 import { TScoreSubmitPayload } from '../score/score.types';
 import { PlayerEntity } from '../player/player.entity';
+import { ATOMIC_SCORE_UPDATE } from './leaderboard.lua';
 
 @Injectable()
 export class LeaderboardService {
+  private readonly logger = new Logger(LeaderboardService.name);
+
   constructor(
     @Inject(CACHE_CLIENT) private readonly redis: Redis,
     @InjectRepository(ScoreEntity)
@@ -29,12 +32,23 @@ export class LeaderboardService {
   ) {}
 
   /**
-   * Get leaderboard
+   * Get leaderboard with caching
    */
   async getLeaderboard(payload: TLeaderboardRetrievalPayload) {
+    const startTime = Date.now();
     const { timeframe, limit, offset, playerId } = payload;
 
     const validatedLimit = Math.min(Math.max(1, limit), LEADERBOARD_RETRIEVAL_LIMIT_MAX);
+
+    // Try cache first (only for non-filtered requests)
+    if (!playerId) {
+      const cached = await this.getFromCache(timeframe, validatedLimit, offset);
+      if (cached) {
+        this.logPerformance('getLeaderboard (cached)', startTime);
+        return cached;
+      }
+    }
+
     const { start, end } = this.getTimeRange(timeframe);
 
     /* Base sql and params */
@@ -46,18 +60,21 @@ export class LeaderboardService {
     /* Items counts */
     const total = await this.leaderboardCount(end, start);
 
-    if (page.length === 0)
-      return {
+    if (page.length === 0) {
+      const emptyResult = {
         items: [],
         total: Number(total),
         limit: validatedLimit,
         offset,
       };
+      this.logPerformance('getLeaderboard', startTime);
+      return emptyResult;
+    }
 
     /* Rank map */
     const rankMap = await this.leaderboardRank(end, page, start);
 
-    return {
+    const result = {
       items: page.map(p => ({
         playerId: p.playerId,
         totalScore: Number(p.totalScore),
@@ -67,6 +84,46 @@ export class LeaderboardService {
       limit: validatedLimit,
       offset,
     };
+
+    // Cache result for non-filtered requests
+    if (!playerId) {
+      await this.setCache(timeframe, validatedLimit, offset, result);
+    }
+
+    this.logPerformance('getLeaderboard', startTime);
+    return result;
+  }
+
+  /**
+   * Get cached leaderboard
+   */
+  private async getFromCache(timeframe: ETimeframe, limit: number, offset: number) {
+    const cacheKey = `leaderboard:cache:${timeframe}:${limit}:${offset}`;
+    const cached = await this.redis.get(cacheKey);
+    if (cached) {
+      return JSON.parse(cached);
+    }
+    return null;
+  }
+
+  /**
+   * Set leaderboard cache
+   */
+  private async setCache(timeframe: ETimeframe, limit: number, offset: number, data: unknown) {
+    const cacheKey = `leaderboard:cache:${timeframe}:${limit}:${offset}`;
+    await this.redis.setex(cacheKey, LEADERBOARD_CACHE_TTL, JSON.stringify(data));
+  }
+
+  /**
+   * Log performance metrics
+   */
+  private logPerformance(operation: string, startTime: number) {
+    const duration = Date.now() - startTime;
+    if (duration > 100) {
+      this.logger.warn(`${operation} took ${duration}ms (exceeds 100ms threshold)`);
+    } else {
+      this.logger.debug(`${operation} completed in ${duration}ms`);
+    }
   }
 
   private leaderboardBaseSql(end: Date, playerId: string, start?: Date) {
@@ -298,36 +355,48 @@ export class LeaderboardService {
   }
 
   /**
-   * Score submit
+   * Score submit with atomic Lua script
    */
   async scoreSubmit(payload: TScoreSubmitPayload) {
+    const startTime = Date.now();
     const { playerId, score } = payload;
     const playerScoreKey = `${LEADERBOARD_PLAYER_KEY}${playerId}`;
 
-    // Always update player's total score
-    const newTotalScore = await this.redis.hincrby(playerScoreKey, playerId, score);
+    // Use Lua script for atomic update
+    const result = (await this.redis.eval(
+      ATOMIC_SCORE_UPDATE,
+      2,
+      playerScoreKey,
+      LEADERBOARD_ALLTIME_KEY,
+      playerId,
+      score.toString(),
+      LEADERBOARD_PLAYER_LIMIT.toString(),
+    )) as [number, number];
 
-    const shouldCache = await this.shouldCachePlayer(playerId, newTotalScore);
+    const [newTotalScore, rank] = result;
 
-    let rank: number | null = null;
+    // Invalidate cache after score update
+    await this.invalidateLeaderboardCache();
 
-    if (shouldCache) {
-      const pipeline = this.redis.pipeline();
+    this.logPerformance('scoreSubmit', startTime);
 
-      pipeline.zadd(LEADERBOARD_ALLTIME_KEY, newTotalScore, playerId);
-      pipeline.zrevrank(LEADERBOARD_ALLTIME_KEY, playerId);
-
-      const results = await pipeline.exec();
-      if (!results) throw new Error('Failed to update leaderboard');
-
-      rank = Number(results[1][1]) + 1;
-
-      this.trimLeaderboardAsync();
-    } else {
-      rank = await this.getPlayerRankFromDb(newTotalScore);
+    // If rank is -1, player is not in leaderboard, get from DB
+    if (rank === 0) {
+      const dbRank = await this.getPlayerRankFromDb(newTotalScore);
+      return { totalScore: newTotalScore, rank: dbRank };
     }
 
     return { totalScore: newTotalScore, rank };
+  }
+
+  /**
+   * Invalidate leaderboard cache after score update
+   */
+  private async invalidateLeaderboardCache() {
+    const keys = await this.redis.keys('leaderboard:cache:*');
+    if (keys.length > 0) {
+      await this.redis.del(...keys);
+    }
   }
 
   private async getPlayerRankFromDb(totalScore: number): Promise<number> {
@@ -336,56 +405,6 @@ export class LeaderboardService {
     });
 
     return count + 1;
-  }
-
-  private async shouldCachePlayer(playerId: string, totalScore: number): Promise<boolean> {
-    const existsInCache = await this.redis.zscore(LEADERBOARD_ALLTIME_KEY, playerId);
-    if (existsInCache !== null) return true;
-
-    const currentSize = await this.redis.zcard(LEADERBOARD_ALLTIME_KEY);
-    if (currentSize < LEADERBOARD_PLAYER_LIMIT) return true;
-
-    const minTopScore = await this.redis.zrange(LEADERBOARD_ALLTIME_KEY, 0, 0, 'WITHSCORES');
-
-    if (minTopScore.length === 0) return true;
-
-    const minScore = Number(minTopScore[1]);
-    return totalScore > minScore;
-  }
-
-  private async trimLeaderboardAsync() {
-    const size = await this.redis.zcard(LEADERBOARD_ALLTIME_KEY);
-
-    if (size <= LEADERBOARD_PLAYER_LIMIT * 1.1) return;
-
-    const toRemove = size - LEADERBOARD_PLAYER_LIMIT;
-
-    const playersToRemove = await this.redis.zrange(LEADERBOARD_ALLTIME_KEY, 0, toRemove - 1);
-
-    const pipeline = this.redis.pipeline();
-
-    pipeline.zremrangebyrank(LEADERBOARD_ALLTIME_KEY, 0, toRemove - 1);
-
-    if (playersToRemove.length > 0) {
-      pipeline.hdel(LEADERBOARD_PLAYER_KEY, ...playersToRemove);
-    }
-
-    await pipeline.exec();
-  }
-
-  private getLeaderboardKey(timeframe: ETimeframe) {
-    const prefix = LEADERBOARD_KEY_PREFIX;
-
-    switch (timeframe) {
-      case ETimeframe.DAILY:
-        return `${prefix}:${new Date().toISOString().slice(0, 10)}`;
-      case ETimeframe.WEEKLY:
-        return `${prefix}:${new Date().getFullYear()}-W${this.getWeekNumber(new Date())}`;
-      case ETimeframe.MONTHLY:
-        return `${prefix}:${new Date().toISOString().slice(0, 7)}`;
-      default:
-        return `${prefix}:alltime`;
-    }
   }
 
   async onModuleInit() {
@@ -448,12 +467,5 @@ export class LeaderboardService {
     }
 
     return { start, end: now };
-  }
-
-  private getWeekNumber(date: Date) {
-    const oneJan = new Date(date.getFullYear(), 0, 1);
-    const numberOfDays = Math.floor((date.getTime() - oneJan.getTime()) / (24 * 60 * 60 * 1000));
-
-    return Math.ceil((date.getDay() + 1 + numberOfDays) / 7);
   }
 }

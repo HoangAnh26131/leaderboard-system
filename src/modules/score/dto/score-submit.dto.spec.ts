@@ -7,7 +7,7 @@ describe('ScoreSubmitDto', () => {
   const validPayload = {
     playerId: 'player_123',
     score: 15000,
-    metadata: { level: 5, timeSpent: 120 },
+    metadata: { level: 5, timespent: 120 },
     timestamp: '2024-01-15T10:30:00Z',
   };
 
@@ -105,7 +105,7 @@ describe('ScoreSubmitDto', () => {
     it('should pass with metadata containing strings and numbers', async () => {
       const dto = plainToInstance(ScoreSubmitDto, {
         ...validPayload,
-        metadata: { level: 5, character: 'warrior', timeSpent: 120 },
+        metadata: { level: 5, character: 'warrior', timespent: 120 },
       });
       const errors = await validate(dto);
 

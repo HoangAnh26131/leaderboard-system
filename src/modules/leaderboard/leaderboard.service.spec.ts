@@ -20,6 +20,11 @@ describe('LeaderboardService', () => {
       zrange: jest.fn().mockResolvedValue(['player_999', '1000']),
       zadd: jest.fn().mockResolvedValue(1),
       zrevrank: jest.fn().mockResolvedValue(0),
+      eval: jest.fn().mockResolvedValue([15000, 1]), // [newTotalScore, rank]
+      keys: jest.fn().mockResolvedValue([]),
+      del: jest.fn().mockResolvedValue(1),
+      get: jest.fn().mockResolvedValue(null),
+      setex: jest.fn().mockResolvedValue('OK'),
       pipeline: jest.fn().mockReturnValue({
         zadd: jest.fn().mockReturnThis(),
         zrevrank: jest.fn().mockReturnThis(),
@@ -174,77 +179,58 @@ describe('LeaderboardService', () => {
   });
 
   describe('scoreSubmit', () => {
-    it('should update player total score in Redis', async () => {
+    it('should update player total score using Lua script', async () => {
+      mockRedis.eval.mockResolvedValue([20000, 5]); // [newTotalScore, rank]
+
       const payload = {
         playerId: 'player_123',
         score: 5000,
-        metadata: {},
+        metadata: { level: 1, timespent: 100 },
         timestamp: new Date(),
       };
 
       await service.scoreSubmit(payload);
 
-      expect(mockRedis.hincrby).toHaveBeenCalledWith(
-        'leaderboard:player:player_123',
-        'player_123',
-        5000,
-      );
+      expect(mockRedis.eval).toHaveBeenCalled();
     });
 
-    it('should return updated total score and rank', async () => {
-      mockRedis.hincrby.mockResolvedValue(20000);
+    it('should return updated total score and rank from Lua script', async () => {
+      mockRedis.eval.mockResolvedValue([20000, 5]); // [newTotalScore, rank]
 
       const result = await service.scoreSubmit({
         playerId: 'player_123',
         score: 5000,
-        metadata: {},
+        metadata: { level: 1, timespent: 100 },
         timestamp: new Date(),
       });
 
       expect(result.totalScore).toBe(20000);
-      expect(result.rank).toBeDefined();
+      expect(result.rank).toBe(5);
     });
 
-    it('should cache player in Redis when player already in cache', async () => {
-      mockRedis.zscore.mockResolvedValue('15000'); // player exists in cache
+    it('should invalidate cache after score update', async () => {
+      mockRedis.eval.mockResolvedValue([20000, 5]);
+      mockRedis.keys.mockResolvedValue(['leaderboard:cache:alltime:100:0']);
 
       await service.scoreSubmit({
         playerId: 'player_123',
         score: 5000,
-        metadata: {},
+        metadata: { level: 1, timespent: 100 },
         timestamp: new Date(),
       });
 
-      expect(mockRedis.pipeline).toHaveBeenCalled();
+      expect(mockRedis.keys).toHaveBeenCalledWith('leaderboard:cache:*');
+      expect(mockRedis.del).toHaveBeenCalled();
     });
 
-    it('should cache player when cache is not full', async () => {
-      mockRedis.zscore.mockResolvedValue(null);
-      mockRedis.zcard.mockResolvedValue(500); // under limit of 1000
-
-      await service.scoreSubmit({
-        playerId: 'player_123',
-        score: 5000,
-        metadata: {},
-        timestamp: new Date(),
-      });
-
-      expect(mockRedis.pipeline).toHaveBeenCalled();
-    });
-
-    it('should get rank from DB when not caching', async () => {
-      mockRedis.zscore.mockResolvedValue(null);
-      mockRedis.zcard.mockResolvedValue(1000); // at limit
-      mockRedis.zrange.mockResolvedValue(['min_player', '50000']); // min score is higher
-
-      mockRedis.hincrby.mockResolvedValue(1000); // new score is lower
-
+    it('should get rank from DB when rank is 0 (not in leaderboard)', async () => {
+      mockRedis.eval.mockResolvedValue([1000, 0]); // rank 0 = not in leaderboard
       mockPlayerRepository.count.mockResolvedValue(999);
 
       const result = await service.scoreSubmit({
         playerId: 'player_123',
         score: 1000,
-        metadata: {},
+        metadata: { level: 1, timespent: 100 },
         timestamp: new Date(),
       });
 

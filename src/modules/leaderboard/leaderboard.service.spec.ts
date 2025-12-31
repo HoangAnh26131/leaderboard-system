@@ -81,7 +81,7 @@ describe('LeaderboardService', () => {
       });
 
       expect(result.items).toEqual([]);
-      expect(result.counts).toBe(0);
+      expect(result.total).toBe(0);
     });
 
     it('should return leaderboard with correct pagination', async () => {

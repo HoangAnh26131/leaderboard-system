@@ -81,7 +81,12 @@ describe('LeaderboardController', () => {
     });
 
     it('should handle different timeframes', async () => {
-      const timeframes = [ETimeframe.DAILY, ETimeframe.WEEKLY, ETimeframe.MONTHLY, ETimeframe.ALLTIME];
+      const timeframes = [
+        ETimeframe.DAILY,
+        ETimeframe.WEEKLY,
+        ETimeframe.MONTHLY,
+        ETimeframe.ALLTIME,
+      ];
 
       for (const timeframe of timeframes) {
         await controller.getLeaderboard({

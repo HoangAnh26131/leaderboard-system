@@ -5,7 +5,7 @@ import * as cookieParser from 'cookie-parser';
 import { Wallet } from 'ethers';
 import { AppModule } from '../src/app.module';
 
-describe.skip('Score Submission Flow (e2e)', () => {
+describe('Score Submission Flow (e2e)', () => {
   let app: INestApplication;
   let agent: ReturnType<typeof request.agent>;
   let wallet: Wallet;
@@ -70,5 +70,35 @@ describe.skip('Score Submission Flow (e2e)', () => {
     expect(cookies).toBeDefined();
     expect(cookies.join(';')).toContain('access_token=');
     expect(cookies.join(';')).toContain('refresh_token=');
+  });
+
+  it('should return leaderboard with scores', async () => {
+    const res = await agent.get('/leaderboard?offset=0&limit=10&timeframe=alltime').expect(200);
+
+    expect(res.body).toHaveProperty('items');
+    expect(Array.isArray(res.body.items)).toBe(true);
+    expect(res.body.items.length).toBeGreaterThan(-1);
+    expect(res.body.items.length).toBeLessThanOrEqual(10);
+    expect(res.body).toHaveProperty('total');
+    expect(res.body).toHaveProperty('limit', 10);
+    expect(res.body).toHaveProperty('offset', 0);
+  });
+
+  it('should return leaderboard with scores and custom limit', async () => {
+    const res = await agent.get('/leaderboard?offset=0&limit=2&timeframe=alltime').expect(200);
+
+    expect(res.body).toHaveProperty('items');
+    expect(Array.isArray(res.body.items)).toBe(true);
+    expect(res.body.items.length).toBeGreaterThan(-1);
+    expect(res.body.items.length).toBeLessThanOrEqual(2);
+  });
+
+  it('should return player rank', async () => {
+    const res = await agent.get('/leaderboard/player?timeframe=alltime').expect(200);
+
+    expect(res.body).toHaveProperty('player');
+    expect(res.body).toHaveProperty('surrounding');
+    expect(res.body.surrounding).toHaveProperty('above');
+    expect(res.body.surrounding).toHaveProperty('below');
   });
 });

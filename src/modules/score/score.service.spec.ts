@@ -229,7 +229,7 @@ describe('ScoreService', () => {
       // First call: detectImpossibleJumps - no previous score
       // Second call: timestamp check - no duplicate
       mockScoreRepository.findOne
-        .mockResolvedValueOnce(null)  // for detectImpossibleJumps
+        .mockResolvedValueOnce(null) // for detectImpossibleJumps
         .mockResolvedValueOnce(null); // for timestamp check
 
       const payloadWithLevel1 = {

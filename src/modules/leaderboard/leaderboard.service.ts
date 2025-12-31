@@ -49,7 +49,7 @@ export class LeaderboardService {
     if (page.length === 0)
       return {
         items: [],
-        counts: Number(total),
+        total: Number(total),
         limit: validatedLimit,
         offset,
       };

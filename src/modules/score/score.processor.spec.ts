@@ -18,7 +18,7 @@ describe('ScoreProcessor', () => {
   const mockJobData: TScoreProcessorSaveScorePayload = {
     playerId: 'player_123',
     score: 15000,
-    metadata: { level: 5, timeSpent: 120 },
+    metadata: { level: 5, timespent: 120 },
     timestamp: new Date('2024-01-15T10:30:00Z'),
     totalScore: 15000,
   };
@@ -101,7 +101,7 @@ describe('ScoreProcessor', () => {
     it('should handle metadata correctly', async () => {
       const jobWithMetadata = {
         ...mockJobData,
-        metadata: { level: 10, character: 'mage', time: 300 },
+        metadata: { level: 10, character: 'mage', timespent: 300 },
       };
       const mockJob: MockJob<TScoreProcessorSaveScorePayload> = { data: jobWithMetadata };
 
@@ -109,7 +109,7 @@ describe('ScoreProcessor', () => {
 
       expect(mockScoreRepository.save).toHaveBeenCalledWith(
         expect.objectContaining({
-          metadata: { level: 10, character: 'mage', time: 300 },
+          metadata: { level: 10, character: 'mage', timespent: 300 },
         }),
       );
     });

@@ -46,7 +46,7 @@ describe('ScoreController', () => {
     const submitDto = {
       playerId: 'player_123',
       score: 15000,
-      metadata: { level: 5, timeSpent: 120 },
+      metadata: { level: 5, timespent: 120 },
       timestamp: new Date('2024-01-15T10:30:00Z'),
     };
 

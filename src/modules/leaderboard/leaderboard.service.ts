@@ -70,16 +70,22 @@ export class LeaderboardService {
   }
 
   private leaderboardBaseSql(end: Date, playerId: string, start?: Date) {
+    const safePlayerId = this.escapeLike(playerId);
+
     const whereSql = `
       s.createdAt <= ?
       AND s.playerId LIKE ?
       ${start ? 'AND s.createdAt >= ?' : ''}
     `;
 
-    const baseParams: unknown[] = [end, `%${playerId}%`];
+    const baseParams: unknown[] = [end, `%${safePlayerId}%`];
     if (start) baseParams.push(start);
 
     return { whereSql, baseParams };
+  }
+
+  private escapeLike(str: string) {
+    return str.replace(/[\\%_]/g, '\\$&');
   }
 
   private async leaderboardCount(end: Date, start?: Date) {

@@ -1,5 +1,5 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { MoreThan, Repository } from 'typeorm';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { PlayerEntity } from './player.entity';
 import { CacheService } from '../cache/cache.service';
@@ -12,6 +12,8 @@ import {
 
 @Injectable()
 export class PlayerService {
+  private readonly logger = new Logger(PlayerService.name);
+
   constructor(
     @InjectRepository(PlayerEntity)
     private readonly repo: Repository<PlayerEntity>,
@@ -50,10 +52,18 @@ export class PlayerService {
 
     await this.repo.update(player.id, player);
 
-    this.cacheService.set(`${PLAYER_BY_WALLET_KEY}${player.wallet}`, player, {
-      ttl: PLAYER_BY_WALLET_TTL,
-    });
-    this.cacheService.set(`${PLAYER_BY_ID_KEY}${playerId}`, player, { ttl: PLAYER_BY_ID_TTL });
+    this.cacheService
+      .set(`${PLAYER_BY_WALLET_KEY}${player.wallet}`, player, {
+        ttl: PLAYER_BY_WALLET_TTL,
+      })
+      .catch(() => {
+        this.logger.error('Failed to set:', `${PLAYER_BY_WALLET_KEY}${player.wallet}`);
+      });
+    this.cacheService
+      .set(`${PLAYER_BY_ID_KEY}${playerId}`, player, { ttl: PLAYER_BY_ID_TTL })
+      .catch(() => {
+        this.logger.error('Failed to set:', `${PLAYER_BY_ID_KEY}${playerId}`);
+      });
 
     return player.totalScore;
   }

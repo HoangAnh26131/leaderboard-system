@@ -26,12 +26,10 @@ export class ScoreService {
     private readonly scoreRepository: Repository<ScoreEntity>,
     @InjectQueue(SCORE_QUEUE) private readonly scoreQueue: Queue,
     private readonly playerService: PlayerService,
-    private readonly leaderboardervice: LeaderboardService,
+    private readonly leaderboardService: LeaderboardService,
   ) {}
 
   async submit(playerRequestId: string, payload: TScoreSubmitPayload) {
-    payload.timestamp = new Date();
-
     const { playerId, score, timestamp } = payload;
 
     if (playerRequestId !== playerId) throw new ForbiddenException('Player is not allowed');
@@ -47,7 +45,7 @@ export class ScoreService {
     if (!exists) throw new BadRequestException('Player does not exist');
 
     // Submit score and get rank
-    const { totalScore, rank } = await this.leaderboardervice.scoreSubmit(payload);
+    const { totalScore, rank } = await this.leaderboardService.scoreSubmit(payload);
 
     // Queue async DB write
     await this.scoreQueue.add(SCORE_PROCESSOR_SAVE_SCORE, { ...payload, totalScore });

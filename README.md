@@ -216,7 +216,7 @@ curl "http://localhost:3000/api/v1/leaderboard?limit=100&offset=100"
 
 #### 3. Get Player Rank
 
-**GET** `api/v1/players/:playerId/rank`
+**GET** `api/v1/leaderboard/player`
 
 Get player's rank, score, and surrounding players.
 
@@ -255,12 +255,12 @@ Get player's rank, score, and surrounding players.
 
 **Example**:
 ```bash
-curl "http://localhost:3000/api/v1/players/player_123/rank?timeframe=weekly"
+curl "http://localhost:3000/api/v1/leaderboard/player?timeframe=weekly"
 ```
 
 ### Web3 Wallet Authentication (Bonus)
 
-#### 5. Request Authentication Nonce
+#### 4. Request Authentication Nonce
 
 **POST** `api/v1/auth/wallet/request`
 
@@ -288,7 +288,7 @@ Request a nonce for wallet signature.
 
 **Nonce TTL**: 100s (single use)
 
-#### 6. Verify Wallet Signature
+#### 5. Verify Wallet Signature
 
 **POST** `api/v1/auth/wallet/verify`
 

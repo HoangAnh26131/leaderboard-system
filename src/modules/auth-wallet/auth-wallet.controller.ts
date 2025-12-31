@@ -33,15 +33,17 @@ export class AuthWalletController {
     res.cookie('access_token', token.accessToken, {
       ...cookieBaseOptions,
       maxAge:
-        this.service.parseExpiry(this.configService.get<string>('JWT_ACCESS_EXPIRES_IN', '1d')) *
-        1000,
+        this.service.parseExpiry(
+          this.configService.get<string>('JWT_AUTH_WALLET_ACCESS_EXPIRES_IN', '1d'),
+        ) * 1000,
     });
 
     res.cookie('refresh_token', token.refreshToken, {
       ...cookieBaseOptions,
       maxAge:
-        this.service.parseExpiry(this.configService.get<string>('JWT_REFRESH_EXPIRES_IN', '7d')) *
-        1000,
+        this.service.parseExpiry(
+          this.configService.get<string>('JWT_AUTH_WALLET_REFRESH_EXPIRES_IN', '7d'),
+        ) * 1000,
     });
 
     return verifiedData;
@@ -61,15 +63,17 @@ export class AuthWalletController {
     res.cookie('access_token', tokens.accessToken, {
       ...cookieBaseOptions,
       maxAge:
-        this.service.parseExpiry(this.configService.get<string>('JWT_ACCESS_EXPIRES_IN', '1d')) *
-        1000,
+        this.service.parseExpiry(
+          this.configService.get<string>('JWT_AUTH_WALLET_ACCESS_EXPIRES_IN', '1d'),
+        ) * 1000,
     });
 
     res.cookie('refresh_token', tokens.refreshToken, {
       ...cookieBaseOptions,
       maxAge:
-        this.service.parseExpiry(this.configService.get<string>('JWT_REFRESH_EXPIRES_IN', '7d')) *
-        1000,
+        this.service.parseExpiry(
+          this.configService.get<string>('JWT_AUTH_WALLET_REFRESH_EXPIRES_IN', '7d'),
+        ) * 1000,
     });
 
     return { success: true };

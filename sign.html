@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+  <body>
+    <script src="https://cdn.jsdelivr.net/npm/ethers/dist/ethers.min.js"></script>
+    <script>
+      const message = 'Sign this nonce to authenticate: 5a5f77efdadd4b2a09e0fdd940fd64d0';
+
+      (async () => {
+        const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+        const signature = await window.ethereum.request({
+          method: 'personal_sign',
+          params: [message, accounts[0]],
+        });
+        console.log('Signature:', signature);
+      })();
+    </script>
+  </body>
+</html>

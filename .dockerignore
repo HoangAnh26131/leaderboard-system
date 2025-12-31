@@ -1,0 +1,15 @@
+node_modules
+npm-debug.log
+dist
+coverage
+.git
+.gitignore
+.env
+.env.test
+.vscode
+.idea
+*.md
+*.log
+test
+**/*.spec.ts
+**/*.e2e-spec.ts

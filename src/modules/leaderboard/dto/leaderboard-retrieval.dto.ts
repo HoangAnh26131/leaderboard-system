@@ -1,4 +1,4 @@
-import { IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString, Max, Min } from 'class-validator';
+import { IsEnum, IsNumber, IsOptional, IsString, Max, Min } from 'class-validator';
 import { ETimeframe } from '../leaderboard.type';
 import {
   LEADERBOARD_RETRIEVAL_LIMIT_DEFAULT,
@@ -6,10 +6,9 @@ import {
 } from '../leaderboard.constant';
 
 export class LeaderboardRetrievalDto {
-  @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   @IsEnum(ETimeframe)
-  timeframe: ETimeframe;
+  timeframe: ETimeframe = ETimeframe.ALLTIME;
 
   @IsNumber()
   @IsOptional()

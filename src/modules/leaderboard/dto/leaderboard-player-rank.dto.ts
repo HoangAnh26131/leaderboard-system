@@ -1,9 +1,8 @@
-import { IsEnum, IsNotEmpty, IsString } from 'class-validator';
+import { IsEnum, IsOptional } from 'class-validator';
 import { ETimeframe } from '../leaderboard.type';
 
 export class LeaderboardPlayerRankDto {
-  @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   @IsEnum(ETimeframe)
-  timeframe: ETimeframe;
+  timeframe: ETimeframe = ETimeframe.ALLTIME;
 }

@@ -61,12 +61,11 @@ describe('LeaderboardPlayerRankDto', () => {
       expect(errors[0].property).toBe('timeframe');
     });
 
-    it('should fail when timeframe is missing', async () => {
+    it('should not fail when timeframe is missing', async () => {
       const dto = plainToInstance(LeaderboardPlayerRankDto, {});
       const errors = await validate(dto);
 
-      expect(errors.length).toBeGreaterThan(0);
-      expect(errors.some(e => e.property === 'timeframe')).toBe(true);
+      expect(errors.length).toEqual(0);
     });
 
     it('should fail with numeric timeframe', async () => {

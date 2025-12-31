@@ -235,4 +235,27 @@ describe('Score Submission Flow (e2e)', () => {
       })
       .expect(400);
   });
+
+  it('should handle concurrent score submissions', async () => {
+    for (let i = 0; i < 10; i++) {
+      await agent.post('/scores').send({
+        playerId,
+        score: 1000 + i,
+        metadata: { level: 1, timespent: 100 },
+        timestamp: new Date(Date.now() + i).toISOString(),
+      });
+    }
+
+    const res = await agent
+      .post('/scores')
+      .send({
+        playerId,
+        score: 1000,
+        metadata: { level: 1, timespent: 100 },
+        timestamp: new Date().toISOString(),
+      })
+      .expect(429);
+
+    expect(res.body.message).toContain('Rate limit exceeded');
+  });
 });

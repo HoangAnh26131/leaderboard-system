@@ -43,16 +43,21 @@ export class AuthWalletService {
     const player = await this.playerService.getOrCreateByWallet(wallet);
     const token = await this.generateTokens({ wallet, playerId: player.id });
 
-    return { wallet, authenticated: true, token };
+    return { wallet, authenticated: true, token, playerId: player.id };
   }
 
   private async generateTokens(payload: TAuthWalletTokenPayload) {
-    const accessToken = this.jwtService.sign(payload, {
+    const cleanPayload: TAuthWalletTokenPayload = {
+      playerId: payload.playerId,
+      wallet: payload.wallet,
+    };
+
+    const accessToken = this.jwtService.sign(cleanPayload, {
       secret: this.config.get<string>('JWT_AUTH_WALLET_ACCESS_SECRET', 'access_secret'),
       expiresIn: this.config.get('JWT_AUTH_WALLET_ACCESS_EXPIRES_IN', '1d'),
     });
 
-    const refreshToken = this.jwtService.sign(payload, {
+    const refreshToken = this.jwtService.sign(cleanPayload, {
       secret: this.config.get<string>('JWT_AUTH_WALLET_REFRESH_SECRET', 'refresh_secret'),
       expiresIn: this.config.get('JWT_AUTH_WALLET_REFRESH_EXPIRES_IN', '7d'),
     });

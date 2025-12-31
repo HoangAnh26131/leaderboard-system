@@ -17,7 +17,7 @@
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "DOCKER_HOST=${DOCKER_HOST:-$([ -S $HOME/.colima/docker.sock ] && echo unix://$HOME/.colima/docker.sock || echo '')} TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE=/var/run/docker.sock TESTCONTAINERS_RYUK_DISABLED=true jest --config jest.config.json --runInBand",
+    "test:e2e": "jest --config jest.config.json --runInBand",
     "migration:generate": "npx ts-node ./node_modules/typeorm/cli.js migration:generate -d src/database/data-source.ts",
     "migration:run": "npx ts-node ./node_modules/typeorm/cli.js migration:run -d  src/database/data-source.ts",
     "migration:revert": "npx ts-node ./node_modules/typeorm/cli.js migration:revert -d  src/database/data-source.ts"

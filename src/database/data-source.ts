@@ -15,5 +15,6 @@ export const AppDataSource = new DataSource({
   entities: [PlayerEntity, ScoreEntity],
   migrations: [__dirname + '/migrations/*.{ts,js}'],
   synchronize: false,
+  timezone: 'Z',
   logging: process.env.NODE_ENV === 'development',
 });

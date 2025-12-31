@@ -15,6 +15,7 @@ export const databaseConfig: TypeOrmModuleAsyncOptions = {
     username: config.get<string>('DB_USERNAME'),
     password: config.get<string>('DB_PASSWORD'),
     database: config.get<string>('DB_DATABASE'),
+    timezone: 'Z',
 
     entities: [PlayerEntity, ScoreEntity],
 

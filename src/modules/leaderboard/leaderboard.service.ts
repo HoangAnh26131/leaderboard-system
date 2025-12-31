@@ -426,9 +426,6 @@ export class LeaderboardService {
       case ETimeframe.DAILY:
         start = new Date(now);
         start.setUTCHours(0, 0, 0, 0);
-
-        console.log(start);
-
         break;
       case ETimeframe.WEEKLY:
         const day = now.getUTCDay(); // 0=Sunday

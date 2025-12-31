@@ -110,7 +110,28 @@ npm test
 npm run test:cov
 ```
 
-**Test Execution Time**: ~2-3 minutes (includes container startup)
+**Docker Runtime Configuration**:
+
+| Runtime | Configuration |
+|---------|---------------|
+| Docker Desktop (Mac/Windows) | Works automatically |
+| Native Docker (Linux) | Works automatically |
+| Colima (Mac) | Set env vars before running (see below) |
+
+**For Colima users**:
+```bash
+# Option 1: Set environment variables
+DOCKER_HOST=unix://$HOME/.colima/docker.sock \
+TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE=/var/run/docker.sock \
+TESTCONTAINERS_RYUK_DISABLED=true \
+npm run test:e2e
+
+# Option 2: Create ~/.testcontainers.properties
+echo "docker.host=unix://$HOME/.colima/docker.sock" >> ~/.testcontainers.properties
+echo "ryuk.disabled=true" >> ~/.testcontainers.properties
+```
+
+**Test Execution Time**: ~10-15 seconds (includes container startup)
 
 ## 📚 API Documentation
 

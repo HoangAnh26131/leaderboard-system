@@ -15,6 +15,7 @@ import { LeaderboardService } from '../leaderboard/leaderboard.service';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ScoreEntity } from './score.entity';
 import { Repository } from 'typeorm';
+import { TooManyRequestsException } from '../../common/exceptions/too-many-request.exception';
 
 @Injectable()
 export class ScoreService {
@@ -63,7 +64,7 @@ export class ScoreService {
 
     const count = await this.redis.zcard(key);
     if (count >= SCORE_MAX_SUBMISSIONS_PER_MINUTE) {
-      throw new BadRequestException(
+      throw new TooManyRequestsException(
         `Rate limit exceeded. Max ${SCORE_MAX_SUBMISSIONS_PER_MINUTE} submissions per minute per player`,
       );
     }

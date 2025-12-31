@@ -123,7 +123,7 @@ http://localhost:3000
 
 #### 1. Submit Score
 
-**POST** `/scores`
+**POST** `api/v1/scores`
 
 Submit a player's score. Auto-registers player if not exists.
 
@@ -143,11 +143,13 @@ Submit a player's score. Auto-registers player if not exists.
 **Response** (201 Created):
 ```json
 {
-  "playerId": "player_123",
-  "score": 15000,
-  "rank": 5,
-  "submittedAt": "2024-01-15T10:30:00Z",
-  "message": "Score submitted successfully"
+    "statusCode": 201,
+    "data": {
+        "playerId": "string",
+        "submittedScore": "number",
+        "totalScore": "number",
+        "rank": "number"
+    }
 }
 ```
 
@@ -160,7 +162,7 @@ Submit a player's score. Auto-registers player if not exists.
 
 **Example**:
 ```bash
-curl -X POST http://localhost:3000/scores \
+curl -X POST http://localhost:3000/api/v1/scores \
   -H "Content-Type: application/json" \
   -d '{
     "playerId": "player_001",
@@ -171,7 +173,7 @@ curl -X POST http://localhost:3000/scores \
 
 #### 2. Get Leaderboard
 
-**GET** `/leaderboard`
+**GET** `api/v1/leaderboard`
 
 Retrieve ranked leaderboard with pagination.
 
@@ -184,29 +186,18 @@ Retrieve ranked leaderboard with pagination.
 **Response** (200 OK):
 ```json
 {
-  "timeframe": "daily",
-  "entries": [
-    {
-      "playerId": "player_001",
-      "username": "player_001",
-      "score": 25000,
-      "rank": 1
-    },
-    {
-      "playerId": "player_002",
-      "username": "player_002",
-      "score": 20000,
-      "rank": 2
-    }
-  ],
-  "total": 1543,
-  "limit": 100,
-  "offset": 0,
-  "playerEntry": {
-    "playerId": "player_456",
-    "username": "player_456",
-    "score": 5000,
-    "rank": 234
+  "statusCode": 200,
+  "data": {
+    "items": [
+      {
+        "playerId": "string",
+        "totalScore": "number",
+        "rank": "number"
+      },
+    ],
+    "total": "number",
+    "limit": 100,
+    "offset": 0
   }
 }
 ```
@@ -214,18 +205,18 @@ Retrieve ranked leaderboard with pagination.
 **Example**:
 ```bash
 # Get top 10 daily leaderboard
-curl "http://localhost:3000/leaderboard?timeframe=daily&limit=10"
+curl "http://localhost:3000/api/v1/leaderboard?timeframe=daily&limit=10"
 
 # Get weekly leaderboard with specific player
-curl "http://localhost:3000/leaderboard?timeframe=weekly&limit=50&playerId=player_123"
+curl "http://localhost:3000/api/v1/leaderboard?timeframe=weekly&limit=50&playerId=player_123"
 
 # Paginated results
-curl "http://localhost:3000/leaderboard?limit=100&offset=100"
+curl "http://localhost:3000/api/v1/leaderboard?limit=100&offset=100"
 ```
 
 #### 3. Get Player Rank
 
-**GET** `/players/:playerId/rank`
+**GET** `api/v1/players/:playerId/rank`
 
 Get player's rank, score, and surrounding players.
 
@@ -235,130 +226,114 @@ Get player's rank, score, and surrounding players.
 **Response** (200 OK):
 ```json
 {
-  "playerId": "player_123",
-  "username": "player_123",
-  "rank": 42,
-  "score": 15000,
-  "totalPlayers": 1543,
-  "surrounding": [
-    {
-      "playerId": "player_040",
-      "username": "player_040",
-      "score": 15500,
-      "rank": 40
+  "statusCode": 200,
+  "data": {
+    "player": {
+    "playerId": "string",
+    "totalScore": "number",
+    "rank": "number"
     },
-    {
-      "playerId": "player_041",
-      "username": "player_041",
-      "score": 15200,
-      "rank": 41
-    },
-    {
-      "playerId": "player_043",
-      "username": "player_043",
-      "score": 14800,
-      "rank": 43
-    },
-    {
-      "playerId": "player_044",
-      "username": "player_044",
-      "score": 14500,
-      "rank": 44
+    "surrounding": {
+      "above": [
+        {
+          "playerId": "string",
+          "totalScore": "number",
+          "rank": "number"
+        }
+      ],
+      "below": [
+        {
+          "playerId": "string",
+          "totalScore": "number",
+          "rank": "number"
+        }
+      ]
     }
-  ]
+  }
 }
 ```
 
 **Example**:
 ```bash
-curl "http://localhost:3000/players/player_123/rank?timeframe=weekly"
-```
-
-#### 4. Get Player Info
-
-**GET** `/players/:playerId`
-
-Get player profile information.
-
-**Response** (200 OK):
-```json
-{
-  "id": "player_123",
-  "username": "player_123",
-  "walletAddress": "0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb",
-  "createdAt": "2024-01-15T10:30:00Z"
-}
+curl "http://localhost:3000/api/v1/players/player_123/rank?timeframe=weekly"
 ```
 
 ### Web3 Wallet Authentication (Bonus)
 
 #### 5. Request Authentication Nonce
 
-**POST** `/auth/wallet/request`
+**POST** `api/v1/auth/wallet/request`
 
 Request a nonce for wallet signature.
 
 **Request Body**:
 ```json
 {
-  "walletAddress": "0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb"
+  "wallet": "0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb"
 }
 ```
 
 **Response** (200 OK):
 ```json
 {
-  "walletAddress": "0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb",
-  "nonce": "a1b2c3d4e5f6...",
-  "message": "Welcome to Leaderboard Game!\n\nPlease sign this message to authenticate.\n\nWallet: 0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb\nNonce: a1b2c3d4e5f6...\nTimestamp: 2024-01-15T10:30:00Z\n\nThis request will not trigger a blockchain transaction or cost any gas fees."
+    "statusCode": 201,
+    "data": {
+        "wallet": "0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb",
+        "nonce": "string",
+        "duration": "number",
+        "message": "Sign this nonce to authenticate: nonce"
+    }
 }
 ```
 
-**Nonce TTL**: 5 minutes (single use)
+**Nonce TTL**: 100s (single use)
 
 #### 6. Verify Wallet Signature
 
-**POST** `/auth/wallet/verify`
+**POST** `api/v1/auth/wallet/verify`
 
 Verify wallet signature and authenticate user.
 
 **Request Body**:
 ```json
 {
-  "walletAddress": "0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb",
-  "signature": "0x1234567890abcdef...",
-  "message": "Welcome to Leaderboard Game!..."
+    "wallet": "0xd30e0B1e076094cD83bB94DAad6d851D7D865540",
+    "signature": "0x41f00f5c97f8b27091ba7fadd595d7d82661ed7d068f0443bf90054d5ab7dd6d03864fdcbb14a03bb01c2c7fb72f9baad10ff9226e33e89ee9daae723b88c8eb1b"
 }
 ```
 
 **Response** (200 OK):
 ```json
 {
-  "success": true,
-  "playerId": "player_abc123",
-  "walletAddress": "0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb",
-  "username": "user_5f0bEb",
-  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+    "statusCode": 201,
+    "data": {
+        "wallet": "0xd30e0B1e076094cD83bB94DAad6d851D7D865540",
+        "authenticated": true
+    }
 }
 ```
+
+Set refresh_token and access_token to request
 
 **Web3 Authentication Flow**:
 ```bash
 # Step 1: Request nonce
-curl -X POST http://localhost:3000/auth/wallet/request \
+curl -X POST http://localhost:3000/api/v1/auth/wallet/request \
   -H "Content-Type: application/json" \
-  -d '{"walletAddress": "0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb"}'
+  -d '{"wallet": "0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb"}'
 
 # Step 2: Sign message with MetaMask/Web3 provider (client-side)
 # const signature = await signer.signMessage(message);
 
 # Step 3: Verify signature
-curl -X POST http://localhost:3000/auth/wallet/verify \
+curl -X POST http://localhost:3000/api/v1/auth/wallet/verify \
   -H "Content-Type: application/json" \
   -d '{
-    "walletAddress": "0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb",
-    "signature": "0x...",
-    "message": "Welcome to Leaderboard Game!..."
+    "statusCode": 201,
+    "data": {
+        "wallet": "0xd30e0B1e076094cD83bB94DAad6d851D7D865540",
+        "authenticated": true
+    }
   }'
 ```
 
@@ -369,34 +344,33 @@ curl -X POST http://localhost:3000/auth/wallet/verify \
 #### Players
 ```sql
 CREATE TABLE players (
-  id VARCHAR(36) PRIMARY KEY,
-  username VARCHAR(50) UNIQUE NOT NULL,
-  wallet_address VARCHAR(42) UNIQUE,
-  nonce VARCHAR(64),
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  INDEX idx_wallet (wallet_address),
-  INDEX idx_username (username)
+  id CHAR(36) NOT NULL PRIMARY KEY,
+  wallet VARCHAR(42) NOT NULL,
+  totalScore BIGINT NOT NULL DEFAULT 0,
+  createdAt TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+  UNIQUE KEY uq_players_wallet (wallet)
 );
 ```
 
 #### Scores
 ```sql
 CREATE TABLE scores (
-  id BIGINT AUTO_INCREMENT PRIMARY KEY,
-  player_id VARCHAR(36) NOT NULL,
+  id CHAR(36) NOT NULL PRIMARY KEY,
+  playerId CHAR(36) NOT NULL,
   score INT UNSIGNED NOT NULL,
-  game_mode VARCHAR(20) DEFAULT 'default',
-  level TINYINT UNSIGNED,
-  time_spent INT UNSIGNED,
-  metadata JSON,
-  submitted_at TIMESTAMP(3) DEFAULT CURRENT_TIMESTAMP(3),
-  
-  INDEX idx_player_time (player_id, submitted_at),
-  INDEX idx_score_time (score DESC, submitted_at DESC),
-  INDEX idx_composite (game_mode, submitted_at, score DESC),
-  
-  FOREIGN KEY (player_id) REFERENCES players(id) ON DELETE CASCADE
+  metadata JSON NULL,
+  timestamp TIMESTAMP NOT NULL,
+  createdAt TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+  UNIQUE KEY uq_player_timestamp (playerId, timestamp),
+  KEY idx_player_score (playerId, score),
+  KEY idx_score_timestamp (score, timestamp),
+
+  CONSTRAINT fk_scores_player
+    FOREIGN KEY (playerId)
+    REFERENCES players(id)
+    ON DELETE CASCADE
 );
 ```
 
@@ -405,15 +379,7 @@ CREATE TABLE scores (
 ```
 Key Pattern                     Type    TTL      Purpose
 ────────────────────────────────────────────────────────────────
-lb:alltime                      ZSET    none     All-time leaderboard
-lb:daily:2024-01-15             ZSET    7d       Daily leaderboard
-lb:weekly:2024-W03              ZSET    30d      Weekly leaderboard
-lb:monthly:2024-01              ZSET    90d      Monthly leaderboard
-
-player:{playerId}               HASH    none     Player metadata cache
-rate:{playerId}                 STR     60s      Rate limit counter
-suspicious:{playerId}           STR     24h      Anomaly counter
-nonce:{walletAddress}           STR     5m       Web3 nonce
+...
 ```
 
 ## ⚡ Performance Characteristics
@@ -477,17 +443,17 @@ src/
 ├── app.module.ts               # Root module
 ├── config/                     # Configuration
 ├── common/                     # Shared utilities
-│   ├── decorators/
+│   ├── constants/
 │   ├── filters/
 │   ├── guards/
 │   ├── interceptors/
-│   └── constants/
+│   └── types/
 ├── modules/
 │   ├── cache/                  # Redis service
 │   ├── score/                  # Score submission
 │   ├── leaderboard/            # Leaderboard retrieval
 │   ├── player/                 # Player management
-│   └── auth/                   # Web3 authentication
+│   └── auth-wallet/            # Web3 authentication
 └── database/
     └── migrations/             # TypeORM migrations
 ```
@@ -498,6 +464,7 @@ src/
 # Application
 NODE_ENV=development
 PORT=3000
+PREFIX=api/v1
 
 # Database
 DB_HOST=localhost
@@ -517,6 +484,14 @@ RATE_LIMIT_MAX=10
 # Score Validation
 MAX_SCORE=1000000
 SCORE_ANOMALY_THRESHOLD=3
+
+# Jwt key
+JWT_AUTH_WALLET_ACCESS_SECRET=your_access_secret_key
+JWT_AUTH_WALLET_ACCESS_EXPIRES_IN=1d
+
+JWT_AUTH_WALLET_REFRESH_SECRET=your_refresh_secret_key
+JWT_AUTH_WALLET_REFRESH_EXPIRES_IN=7d
+
 ```
 
 ### Available Scripts
@@ -556,42 +531,16 @@ npm run migration:revert    # Revert last migration
 
 ```bash
 # Build
-docker build -t leaderboard-api .
+# ...
 
 # Run
-docker run -p 3000:3000 \
-  -e DB_HOST=mysql \
-  -e REDIS_HOST=redis \
-  leaderboard-api
+# ...
 ```
 
 ### Kubernetes Deployment
 
 ```yaml
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: leaderboard-api
-spec:
-  replicas: 3
-  selector:
-    matchLabels:
-      app: leaderboard-api
-  template:
-    metadata:
-      labels:
-        app: leaderboard-api
-    spec:
-      containers:
-      - name: api
-        image: leaderboard-api:latest
-        ports:
-        - containerPort: 3000
-        env:
-        - name: DB_HOST
-          value: mysql-service
-        - name: REDIS_HOST
-          value: redis-service
+...
 ```
 
 ## 📈 Monitoring
@@ -661,34 +610,9 @@ Structured logging with context:
 - Stateless services
 - Graceful shutdown
 
-## 📝 Changelog
-
-### v1.0.0 (2024-01-15)
-
-- ✅ Core leaderboard functionality
-- ✅ Multiple timeframe support
-- ✅ Rate limiting
-- ✅ Anomaly detection
-- ✅ Web3 wallet authentication
-- ✅ Comprehensive E2E tests
-- ✅ Performance optimization
-- ✅ Production-ready code
-
-## 🤝 Contributing
-
-1. Fork repository
-2. Create feature branch (`git checkout -b feature/amazing`)
-3. Commit changes (`git commit -m 'Add amazing feature'`)
-4. Push to branch (`git push origin feature/amazing`)
-5. Open Pull Request
-
 ## 📄 License
 
 MIT License - see LICENSE file
-
-## 👥 Authors
-
-- Senior Backend Engineer
 
 ## 🙏 Acknowledgments
 

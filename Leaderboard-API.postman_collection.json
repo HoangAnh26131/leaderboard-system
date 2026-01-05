@@ -1,0 +1,624 @@
+{
+  "info": {
+    "name": "Leaderboard System API",
+    "_postman_id": "leaderboard-system-api",
+    "description": "Complete API collection for Real-time Multiplayer Game Leaderboard System",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:3000/api/v1",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Score Submission",
+      "item": [
+        {
+          "name": "Submit Score - Player 001",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"playerId\": \"player_001\",\n  \"score\": 15000,\n  \"metadata\": {\n    \"level\": 5,\n    \"timeSpent\": 120\n  }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/scores",
+              "host": ["{{base_url}}"],
+              "path": ["scores"]
+            },
+            "description": "Submit a score for player_001 with metadata"
+          }
+        },
+        {
+          "name": "Submit Score - Player 002",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"playerId\": \"player_002\",\n  \"score\": 12000,\n  \"metadata\": {\n    \"level\": 4,\n    \"timeSpent\": 90\n  }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/scores",
+              "host": ["{{base_url}}"],
+              "path": ["scores"]
+            }
+          }
+        },
+        {
+          "name": "Submit Score - Player 003",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"playerId\": \"player_003\",\n  \"score\": 18000,\n  \"metadata\": {\n    \"level\": 6,\n    \"timeSpent\": 150\n  }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/scores",
+              "host": ["{{base_url}}"],
+              "path": ["scores"]
+            }
+          }
+        },
+        {
+          "name": "Submit Score - With Timestamp",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"playerId\": \"player_004\",\n  \"score\": 9500,\n  \"metadata\": {\n    \"level\": 3,\n    \"timeSpent\": 60\n  },\n  \"timestamp\": \"2024-01-15T10:30:00Z\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/scores",
+              "host": ["{{base_url}}"],
+              "path": ["scores"]
+            }
+          }
+        },
+        {
+          "name": "Submit High Score - Player 001",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"playerId\": \"player_001\",\n  \"score\": 25000,\n  \"metadata\": {\n    \"level\": 8,\n    \"timeSpent\": 200\n  }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/scores",
+              "host": ["{{base_url}}"],
+              "path": ["scores"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Leaderboard Retrieval",
+      "item": [
+        {
+          "name": "Get Leaderboard - All Time (Top 10)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/leaderboard?timeframe=alltime&limit=10",
+              "host": ["{{base_url}}"],
+              "path": ["leaderboard"],
+              "query": [
+                {
+                  "key": "timeframe",
+                  "value": "alltime"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            },
+            "description": "Get top 10 players from all-time leaderboard"
+          }
+        },
+        {
+          "name": "Get Leaderboard - Daily",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/leaderboard?timeframe=daily&limit=20",
+              "host": ["{{base_url}}"],
+              "path": ["leaderboard"],
+              "query": [
+                {
+                  "key": "timeframe",
+                  "value": "daily"
+                },
+                {
+                  "key": "limit",
+                  "value": "20"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Leaderboard - Weekly",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/leaderboard?timeframe=weekly&limit=15",
+              "host": ["{{base_url}}"],
+              "path": ["leaderboard"],
+              "query": [
+                {
+                  "key": "timeframe",
+                  "value": "weekly"
+                },
+                {
+                  "key": "limit",
+                  "value": "15"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Leaderboard - Monthly",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/leaderboard?timeframe=monthly&limit=25",
+              "host": ["{{base_url}}"],
+              "path": ["leaderboard"],
+              "query": [
+                {
+                  "key": "timeframe",
+                  "value": "monthly"
+                },
+                {
+                  "key": "limit",
+                  "value": "25"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Leaderboard - With Pagination (Page 1)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/leaderboard?timeframe=alltime&limit=10&offset=0",
+              "host": ["{{base_url}}"],
+              "path": ["leaderboard"],
+              "query": [
+                {
+                  "key": "timeframe",
+                  "value": "alltime"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                },
+                {
+                  "key": "offset",
+                  "value": "0"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Leaderboard - With Pagination (Page 2)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/leaderboard?timeframe=alltime&limit=10&offset=10",
+              "host": ["{{base_url}}"],
+              "path": ["leaderboard"],
+              "query": [
+                {
+                  "key": "timeframe",
+                  "value": "alltime"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                },
+                {
+                  "key": "offset",
+                  "value": "10"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Leaderboard - With Specific Player",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/leaderboard?timeframe=alltime&limit=50&playerId=player_001",
+              "host": ["{{base_url}}"],
+              "path": ["leaderboard"],
+              "query": [
+                {
+                  "key": "timeframe",
+                  "value": "alltime"
+                },
+                {
+                  "key": "limit",
+                  "value": "50"
+                },
+                {
+                  "key": "playerId",
+                  "value": "player_001"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Player Rank",
+      "item": [
+        {
+          "name": "Get Player Rank - Player 001 (All Time)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/leaderboard/player?playerId=player_001&timeframe=alltime",
+              "host": ["{{base_url}}"],
+              "path": ["leaderboard", "player"],
+              "query": [
+                {
+                  "key": "playerId",
+                  "value": "player_001"
+                },
+                {
+                  "key": "timeframe",
+                  "value": "alltime"
+                }
+              ]
+            },
+            "description": "Get player rank with surrounding players"
+          }
+        },
+        {
+          "name": "Get Player Rank - Player 002 (Daily)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/leaderboard/player?playerId=player_002&timeframe=daily",
+              "host": ["{{base_url}}"],
+              "path": ["leaderboard", "player"],
+              "query": [
+                {
+                  "key": "playerId",
+                  "value": "player_002"
+                },
+                {
+                  "key": "timeframe",
+                  "value": "daily"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Player Rank - Player 003 (Weekly)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/leaderboard/player?playerId=player_003&timeframe=weekly",
+              "host": ["{{base_url}}"],
+              "path": ["leaderboard", "player"],
+              "query": [
+                {
+                  "key": "playerId",
+                  "value": "player_003"
+                },
+                {
+                  "key": "timeframe",
+                  "value": "weekly"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Player Rank - Player 004 (Monthly)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/leaderboard/player?playerId=player_004&timeframe=monthly",
+              "host": ["{{base_url}}"],
+              "path": ["leaderboard", "player"],
+              "query": [
+                {
+                  "key": "playerId",
+                  "value": "player_004"
+                },
+                {
+                  "key": "timeframe",
+                  "value": "monthly"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Web3 Wallet Authentication",
+      "item": [
+        {
+          "name": "Request Wallet Nonce - Wallet 1",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"wallet\": \"0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/wallet/request",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "wallet", "request"]
+            },
+            "description": "Request authentication nonce for wallet signature"
+          }
+        },
+        {
+          "name": "Request Wallet Nonce - Wallet 2",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"wallet\": \"0xd30e0B1e076094cD83bB94DAad6d851D7D865540\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/wallet/request",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "wallet", "request"]
+            }
+          }
+        },
+        {
+          "name": "Verify Wallet Signature",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"wallet\": \"0xd30e0B1e076094cD83bB94DAad6d851D7D865540\",\n  \"signature\": \"0x41f00f5c97f8b27091ba7fadd595d7d82661ed7d068f0443bf90054d5ab7dd6d03864fdcbb14a03bb01c2c7fb72f9baad10ff9226e33e89ee9daae723b88c8eb1b\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/wallet/verify",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "wallet", "verify"]
+            },
+            "description": "Verify wallet signature and authenticate user"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Validation & Error Testing",
+      "item": [
+        {
+          "name": "Test Negative Score (Should Fail)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"playerId\": \"player_005\",\n  \"score\": -1000\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/scores",
+              "host": ["{{base_url}}"],
+              "path": ["scores"]
+            },
+            "description": "Test validation - negative scores should be rejected"
+          }
+        },
+        {
+          "name": "Test Score Over Limit (Should Fail)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"playerId\": \"player_006\",\n  \"score\": 2000000\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/scores",
+              "host": ["{{base_url}}"],
+              "path": ["scores"]
+            },
+            "description": "Test validation - scores over MAX_SCORE should be rejected"
+          }
+        },
+        {
+          "name": "Test Invalid Timeframe (Should Fail)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/leaderboard?timeframe=invalid",
+              "host": ["{{base_url}}"],
+              "path": ["leaderboard"],
+              "query": [
+                {
+                  "key": "timeframe",
+                  "value": "invalid"
+                }
+              ]
+            },
+            "description": "Test validation - invalid timeframe should be rejected"
+          }
+        },
+        {
+          "name": "Test Missing PlayerId (Should Fail)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"score\": 5000\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/scores",
+              "host": ["{{base_url}}"],
+              "path": ["scores"]
+            },
+            "description": "Test validation - missing required playerId should fail"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Rate Limiting Test",
+      "item": [
+        {
+          "name": "Rate Limit - Request 1",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"playerId\": \"rate_test_player\",\n  \"score\": 100\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/scores",
+              "host": ["{{base_url}}"],
+              "path": ["scores"]
+            },
+            "description": "Send multiple requests quickly to test rate limiting"
+          }
+        },
+        {
+          "name": "Rate Limit - Request 2",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"playerId\": \"rate_test_player\",\n  \"score\": 200\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/scores",
+              "host": ["{{base_url}}"],
+              "path": ["scores"]
+            }
+          }
+        },
+        {
+          "name": "Rate Limit - Request 3",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"playerId\": \"rate_test_player\",\n  \"score\": 300\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/scores",
+              "host": ["{{base_url}}"],
+              "path": ["scores"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
+

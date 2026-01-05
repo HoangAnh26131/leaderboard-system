@@ -10,6 +10,7 @@ import { CacheModule } from './modules/cache/cache.module';
 import { PlayerModule } from './modules/player/player.module';
 import { ScoreModule } from './modules/score/score.module';
 import { LeaderboardModule } from './modules/leaderboard/leaderboard.module';
+import { AppController } from './app.controller';
 
 @Module({
   imports: [
@@ -29,5 +30,6 @@ import { LeaderboardModule } from './modules/leaderboard/leaderboard.module';
     ScoreModule,
     LeaderboardModule,
   ],
+  controllers: [AppController],
 })
 export class AppModule {}

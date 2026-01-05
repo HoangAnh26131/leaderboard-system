@@ -1,0 +1,261 @@
+═══════════════════════════════════════════════════════════════════════════
+LEADERBOARD SYSTEM API - cURL COMMANDS
+═══════════════════════════════════════════════════════════════════════════
+
+BASE URL: http://localhost:3000/api/v1
+
+═══════════════════════════════════════════════════════════════════════════
+1. SCORE SUBMISSION
+═══════════════════════════════════════════════════════════════════════════
+
+# Submit Score - Player 001
+curl -X POST http://localhost:3000/api/v1/scores \
+  -H "Content-Type: application/json" \
+  -d '{
+    "playerId": "player_001",
+    "score": 15000,
+    "metadata": {
+      "level": 5,
+      "timeSpent": 120
+    }
+  }'
+
+---
+
+# Submit Score - Player 002
+curl -X POST http://localhost:3000/api/v1/scores \
+  -H "Content-Type: application/json" \
+  -d '{
+    "playerId": "player_002",
+    "score": 12000,
+    "metadata": {
+      "level": 4,
+      "timeSpent": 90
+    }
+  }'
+
+---
+
+# Submit Score - Player 003
+curl -X POST http://localhost:3000/api/v1/scores \
+  -H "Content-Type: application/json" \
+  -d '{
+    "playerId": "player_003",
+    "score": 18000,
+    "metadata": {
+      "level": 6,
+      "timeSpent": 150
+    }
+  }'
+
+---
+
+# Submit Score - With Timestamp
+curl -X POST http://localhost:3000/api/v1/scores \
+  -H "Content-Type: application/json" \
+  -d '{
+    "playerId": "player_004",
+    "score": 9500,
+    "metadata": {
+      "level": 3,
+      "timeSpent": 60
+    },
+    "timestamp": "2024-01-15T10:30:00Z"
+  }'
+
+---
+
+# Submit High Score - Player 001
+curl -X POST http://localhost:3000/api/v1/scores \
+  -H "Content-Type: application/json" \
+  -d '{
+    "playerId": "player_001",
+    "score": 25000,
+    "metadata": {
+      "level": 8,
+      "timeSpent": 200
+    }
+  }'
+
+═══════════════════════════════════════════════════════════════════════════
+2. LEADERBOARD RETRIEVAL
+═══════════════════════════════════════════════════════════════════════════
+
+# Get Leaderboard - All Time (Top 10)
+curl -X GET "http://localhost:3000/api/v1/leaderboard?timeframe=alltime&limit=10"
+
+---
+
+# Get Leaderboard - Daily
+curl -X GET "http://localhost:3000/api/v1/leaderboard?timeframe=daily&limit=20"
+
+---
+
+# Get Leaderboard - Weekly
+curl -X GET "http://localhost:3000/api/v1/leaderboard?timeframe=weekly&limit=15"
+
+---
+
+# Get Leaderboard - Monthly
+curl -X GET "http://localhost:3000/api/v1/leaderboard?timeframe=monthly&limit=25"
+
+---
+
+# Get Leaderboard - With Pagination (Page 1)
+curl -X GET "http://localhost:3000/api/v1/leaderboard?timeframe=alltime&limit=10&offset=0"
+
+---
+
+# Get Leaderboard - With Pagination (Page 2)
+curl -X GET "http://localhost:3000/api/v1/leaderboard?timeframe=alltime&limit=10&offset=10"
+
+---
+
+# Get Leaderboard - With Specific Player
+curl -X GET "http://localhost:3000/api/v1/leaderboard?timeframe=alltime&limit=50&playerId=player_001"
+
+---
+
+# Get Leaderboard - Max Limit (1000)
+curl -X GET "http://localhost:3000/api/v1/leaderboard?timeframe=alltime&limit=1000"
+
+═══════════════════════════════════════════════════════════════════════════
+3. PLAYER RANK
+═══════════════════════════════════════════════════════════════════════════
+
+# Get Player Rank - Player 001 (All Time)
+curl -X GET "http://localhost:3000/api/v1/leaderboard/player?playerId=player_001&timeframe=alltime"
+
+---
+
+# Get Player Rank - Player 002 (Daily)
+curl -X GET "http://localhost:3000/api/v1/leaderboard/player?playerId=player_002&timeframe=daily"
+
+---
+
+# Get Player Rank - Player 003 (Weekly)
+curl -X GET "http://localhost:3000/api/v1/leaderboard/player?playerId=player_003&timeframe=weekly"
+
+---
+
+# Get Player Rank - Player 004 (Monthly)
+curl -X GET "http://localhost:3000/api/v1/leaderboard/player?playerId=player_004&timeframe=monthly"
+
+═══════════════════════════════════════════════════════════════════════════
+4. WEB3 WALLET AUTHENTICATION
+═══════════════════════════════════════════════════════════════════════════
+
+# Request Wallet Nonce - Wallet 1
+curl -X POST http://localhost:3000/api/v1/auth/wallet/request \
+  -H "Content-Type: application/json" \
+  -d '{
+    "wallet": "0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb"
+  }'
+
+---
+
+# Request Wallet Nonce - Wallet 2
+curl -X POST http://localhost:3000/api/v1/auth/wallet/request \
+  -H "Content-Type: application/json" \
+  -d '{
+    "wallet": "0xd30e0B1e076094cD83bB94DAad6d851D7D865540"
+  }'
+
+---
+
+# Verify Wallet Signature (Note: You need to get real signature from wallet)
+curl -X POST http://localhost:3000/api/v1/auth/wallet/verify \
+  -H "Content-Type: application/json" \
+  -d '{
+    "wallet": "0xd30e0B1e076094cD83bB94DAad6d851D7D865540",
+    "signature": "0x41f00f5c97f8b27091ba7fadd595d7d82661ed7d068f0443bf90054d5ab7dd6d03864fdcbb14a03bb01c2c7fb72f9baad10ff9226e33e89ee9daae723b88c8eb1b"
+  }'
+
+═══════════════════════════════════════════════════════════════════════════
+5. VALIDATION & ERROR TESTING
+═══════════════════════════════════════════════════════════════════════════
+
+# Test Negative Score (Should Fail)
+curl -X POST http://localhost:3000/api/v1/scores \
+  -H "Content-Type: application/json" \
+  -d '{
+    "playerId": "player_005",
+    "score": -1000
+  }'
+
+---
+
+# Test Score Over Limit (Should Fail)
+curl -X POST http://localhost:3000/api/v1/scores \
+  -H "Content-Type: application/json" \
+  -d '{
+    "playerId": "player_006",
+    "score": 2000000
+  }'
+
+---
+
+# Test Invalid Timeframe (Should Fail)
+curl -X GET "http://localhost:3000/api/v1/leaderboard?timeframe=invalid"
+
+---
+
+# Test Missing PlayerId (Should Fail)
+curl -X POST http://localhost:3000/api/v1/scores \
+  -H "Content-Type: application/json" \
+  -d '{
+    "score": 5000
+  }'
+
+---
+
+# Test Invalid Wallet Address (Should Fail)
+curl -X POST http://localhost:3000/api/v1/auth/wallet/request \
+  -H "Content-Type: application/json" \
+  -d '{
+    "wallet": "invalid_address"
+  }'
+
+═══════════════════════════════════════════════════════════════════════════
+6. RATE LIMITING TEST
+═══════════════════════════════════════════════════════════════════════════
+
+# Run these commands quickly one after another to test rate limiting
+# After 10 requests in a minute, you should get rate limit error
+
+curl -X POST http://localhost:3000/api/v1/scores -H "Content-Type: application/json" -d '{"playerId": "rate_test_player", "score": 100}'
+curl -X POST http://localhost:3000/api/v1/scores -H "Content-Type: application/json" -d '{"playerId": "rate_test_player", "score": 200}'
+curl -X POST http://localhost:3000/api/v1/scores -H "Content-Type: application/json" -d '{"playerId": "rate_test_player", "score": 300}'
+curl -X POST http://localhost:3000/api/v1/scores -H "Content-Type: application/json" -d '{"playerId": "rate_test_player", "score": 400}'
+curl -X POST http://localhost:3000/api/v1/scores -H "Content-Type: application/json" -d '{"playerId": "rate_test_player", "score": 500}'
+curl -X POST http://localhost:3000/api/v1/scores -H "Content-Type: application/json" -d '{"playerId": "rate_test_player", "score": 600}'
+curl -X POST http://localhost:3000/api/v1/scores -H "Content-Type: application/json" -d '{"playerId": "rate_test_player", "score": 700}'
+curl -X POST http://localhost:3000/api/v1/scores -H "Content-Type: application/json" -d '{"playerId": "rate_test_player", "score": 800}'
+curl -X POST http://localhost:3000/api/v1/scores -H "Content-Type: application/json" -d '{"playerId": "rate_test_player", "score": 900}'
+curl -X POST http://localhost:3000/api/v1/scores -H "Content-Type: application/json" -d '{"playerId": "rate_test_player", "score": 1000}'
+curl -X POST http://localhost:3000/api/v1/scores -H "Content-Type: application/json" -d '{"playerId": "rate_test_player", "score": 1100}'  # Should fail
+
+═══════════════════════════════════════════════════════════════════════════
+7. PRETTY FORMATTED OUTPUT (using jq)
+═══════════════════════════════════════════════════════════════════════════
+
+# If you have 'jq' installed, pipe output for pretty formatting:
+
+curl -X GET "http://localhost:3000/api/v1/leaderboard?timeframe=alltime&limit=10" | jq
+
+curl -X POST http://localhost:3000/api/v1/scores \
+  -H "Content-Type: application/json" \
+  -d '{"playerId": "player_001", "score": 15000}' | jq
+
+═══════════════════════════════════════════════════════════════════════════
+TIPS
+═══════════════════════════════════════════════════════════════════════════
+
+1. Make sure the application is running: npm run start:dev
+2. Verify services: docker-compose ps
+3. Check logs: docker-compose logs -f
+4. Install jq for pretty output: brew install jq (Mac) or apt-get install jq (Linux)
+5. To import into Postman: Use the JSON collection file instead of these cURL commands
+
+═══════════════════════════════════════════════════════════════════════════
+

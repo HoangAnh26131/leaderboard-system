@@ -7,14 +7,22 @@ import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
 import { PerformanceInterceptor } from './common/interceptors/performance.interceptor';
 import { ResponseInterceptor } from './common/interceptors/response.interceptor';
+import { NestExpressApplication } from '@nestjs/platform-express';
+import { join } from 'path';
+import * as express from 'express';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
   const configService = app.get(ConfigService);
+
+  // Serve static files from public directory
+  app.use(express.static(join(__dirname, '..', 'public')));
 
   app.use(cookieParser());
 
-  app.setGlobalPrefix(configService.get<string>('PREFIX', ''));
+  app.setGlobalPrefix(configService.get<string>('PREFIX', ''), {
+    exclude: ['/', 'health'],
+  });
 
   // Global validation pipe with strict mode
   app.useGlobalPipes(
